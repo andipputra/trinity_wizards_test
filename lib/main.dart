@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:trinity_wizards_test/pages/contact_page.dart';
 import 'package:trinity_wizards_test/pages/home_page.dart';
 
 void main() {
@@ -34,11 +33,12 @@ class MyApp extends StatelessWidget {
         // colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      routes: {
-        '/': (context) => const HomePage(),
-        '/contact': (context) => const ContactPage(),
-      },
-      initialRoute: '/',
+      home: const HomePage(),
+      // routes: {
+      //   '/': (context) => const HomePage(),
+      //   '/contact': (context) => const ContactPage(),
+      // },
+      // initialRoute: '/',
     );
   }
 }
