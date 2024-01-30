@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -42,8 +41,28 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       isLoading = false;
     });
+  }
 
-    log('data json', error: listContact.toString());
+  goToContactPage(int? index) {
+    Navigator.of(context)
+        .push(
+      MaterialPageRoute(
+        builder: (context) => ContactPage(
+          contact: index != null ? listContact[index] : null,
+        ),
+      ),
+    )
+        .then((value) {
+      if (value != null && value is Map<String, dynamic>) {
+        if (index != null) {
+          listContact[index] = value;
+        } else {
+          listContact.add(value);
+        }
+
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -61,7 +80,9 @@ class _HomePageState extends State<HomePage> {
         centerTitle: true,
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              goToContactPage(null);
+            },
             icon: const Icon(
               Icons.add,
               color: AppColor.primaryColor,
@@ -101,21 +122,7 @@ class _HomePageState extends State<HomePage> {
 
                     return InkWell(
                       onTap: () {
-                        Navigator.of(context)
-                            .push(
-                          MaterialPageRoute(
-                            builder: (context) => ContactPage(
-                              contact: dataContact,
-                            ),
-                          ),
-                        )
-                            .then((value) {
-                          if (value != null && value is Map<String, dynamic>) {
-                            listContact[index] = value;
-
-                            setState(() {});
-                          }
-                        });
+                        goToContactPage(index);
                       },
                       child: Container(
                         decoration: BoxDecoration(
