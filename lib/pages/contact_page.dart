@@ -39,6 +39,15 @@ class _ContactPageState extends State<ContactPage> {
     super.initState();
   }
 
+  @override
+  dispose() {
+    firstName.dispose();
+    lastName.dispose();
+    email.dispose();
+    dob.dispose();
+    super.dispose();
+  }
+
   saveData() {
     final isValidate = _formKey.currentState?.validate();
 

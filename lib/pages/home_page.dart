@@ -15,12 +15,50 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final listContact = <Map<String, dynamic>>[];
 
-  bool isLoading = false;
+  final showedListContact = <Map<String, dynamic>>[];
+
+  bool isLoading = false, isSearch = false;
+
+  late TextEditingController searchController;
 
   @override
   void initState() {
+    searchController = TextEditingController();
     getDataFromJson();
     super.initState();
+
+    searchController.addListener(() {
+      showedListContact.clear();
+
+      List<Map<String, dynamic>> sortedList = [];
+
+      if (searchController.text.isEmpty) {
+        sortedList = listContact;
+      } else {
+        sortedList = listContact
+            .where((element) =>
+                element['firstName']
+                    .toString()
+                    .toLowerCase()
+                    .contains(searchController.text.toLowerCase()) ||
+                element['lastName']
+                    .toString()
+                    .toLowerCase()
+                    .contains(searchController.text.toLowerCase()))
+            .toList();
+      }
+
+      showedListContact.addAll(sortedList);
+
+      setState(() {});
+    });
+  }
+
+  @override
+  dispose() {
+    super.dispose();
+
+    searchController.dispose();
   }
 
   getDataFromJson() async {
@@ -38,6 +76,8 @@ class _HomePageState extends State<HomePage> {
       listContact.add(contact);
     }
 
+    showedListContact.addAll(listContact);
+
     setState(() {
       isLoading = false;
     });
@@ -48,14 +88,17 @@ class _HomePageState extends State<HomePage> {
         .push(
       MaterialPageRoute(
         builder: (context) => ContactPage(
-          contact: index != null ? listContact[index] : null,
+          contact: index != null ? showedListContact[index] : null,
         ),
       ),
     )
         .then((value) {
       if (value != null && value is Map<String, dynamic>) {
-        if (index != null) {
-          listContact[index] = value;
+        if (value['id'] != null) {
+          final contactIndex =
+              listContact.indexWhere((element) => element['id'] == value['id']);
+
+          listContact[contactIndex] = value;
         } else {
           listContact.add(value);
         }
@@ -65,13 +108,20 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  Widget searchAppBar() => TextFormField(
+        controller: searchController,
+        decoration: const InputDecoration(
+          hintText: 'Search Contact',
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.grey.shade200,
         elevation: 2,
-        title: const Text('Contacts'),
+        title: isSearch ? searchAppBar() : const Text('Contacts'),
         titleTextStyle: const TextStyle(
           fontWeight: FontWeight.bold,
           color: Colors.black,
@@ -91,9 +141,13 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
         leading: IconButton(
-          onPressed: () {},
-          icon: const Icon(
-            Icons.search,
+          onPressed: () {
+            setState(() {
+              isSearch = !isSearch;
+            });
+          },
+          icon: Icon(
+            isSearch ? Icons.arrow_back : Icons.search,
             color: AppColor.primaryColor,
           ),
           iconSize: 24,
@@ -109,7 +163,7 @@ class _HomePageState extends State<HomePage> {
                 return;
               },
               child: GridView.builder(
-                  itemCount: listContact.length,
+                  itemCount: showedListContact.length,
                   shrinkWrap: true,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
@@ -118,7 +172,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   padding: const EdgeInsets.all(24),
                   itemBuilder: (context, index) {
-                    final dataContact = listContact[index];
+                    final dataContact = showedListContact[index];
 
                     return InkWell(
                       onTap: () {
